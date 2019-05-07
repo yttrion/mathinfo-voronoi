@@ -5,6 +5,14 @@ import tkinter as Tk
 import sys
 import os
 import threading
+import configparser
+
+
+curDir = os.path.dirname(os.path.abspath(__file__)) + '/'
+configFile = curDir + "./vor.cfg"
+config = configparser.ConfigParser()
+config.read(configFile)
+
 
 class interface:
     def __init__(self):
@@ -43,7 +51,13 @@ class interface:
 
     def clicked(self, event):
         x, y = event.x, event.y
-        self.can.create_oval(x+2,y+2,x-2,y-2, fill="red")
+        if config.getboolean("config", "custom-plot"):
+            self.can.create_oval(x+2,y+2,x-2,y-2, fill="red")
+        else:
+            os.system("clear")
+
+
+
 
 
 
