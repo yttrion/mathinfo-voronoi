@@ -11,6 +11,7 @@ class interface:
         self.root = Tk.Tk()
         self.height = 400
         self.width = 400
+        self.bg = "white"
         self.title = self.root.title("Voronoi")
         self.menubar = Tk.Menu(self.root)
         self.root.config(menu=self.menubar)
@@ -29,11 +30,33 @@ class interface:
         self.savemenu = Tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Save", menu=self.savemenu)
         self.savemenu.add_command(label="Save plots")
-        
 
-        #self.can = Tk.Canvas(self.root, height=self.height, width=self.width)
-        #self.can.pack(side=Tk.BOTTOM)
+        self.can = Tk.Canvas(self.root, height=self.height, width=self.width, bg=self.bg)
+        self.can.pack(side=Tk.BOTTOM)
+        self.root.bind('<Motion>', self.motion)
+        self.root.bind('<Button-1>', self.clicked)
         self.root.mainloop()
+
+    def motion(self, event):
+        x, y = event.x, event.y
+        print("%s - %s" % (x, y))
+
+    def clicked(self, event):
+        x, y = event.x, event.y
+        self.can.create_oval(x+2,y+2,x-2,y-2, fill="red")
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if __name__=="__main__":
     interface()
