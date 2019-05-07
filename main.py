@@ -21,13 +21,13 @@ class interface:
         self.filemenu.add_command(label="Run")
         self.filemenu.add_command(label="Quit")
         
-        self.custommenu = Tk.Menu(self.menubar, tearoff=1)
-        self.menubar.add_cascade(label="Custom", menu=self.filemenu)
+        self.custommenu = Tk.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label="Custom", menu=self.custommenu)
         self.custommenu.add_command(label="Create points")
         self.custommenu.add_command(label="Drag")
         
-        self.savemenu = Tk.Menu(self.menubar, tearoff=2)
-        self.menubar.add_cascade(label="Save", menu=self.filemenu)
+        self.savemenu = Tk.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label="Save", menu=self.savemenu)
         self.savemenu.add_command(label="Save plots")
         
 
