@@ -13,6 +13,7 @@ class interface:
         self.width = 400
         self.title = self.root.title("Voronoi")
         self.menubar = Tk.Menu(self.root)
+        self.root.config(menu=self.menubar)
         
         self.filemenu = Tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
@@ -20,12 +21,12 @@ class interface:
         self.filemenu.add_command(label="Run")
         self.filemenu.add_command(label="Quit")
         
-        self.custommenu = Tk.Menu(self.menubar, tearoff=0)
+        self.custommenu = Tk.Menu(self.menubar, tearoff=1)
         self.menubar.add_cascade(label="Custom", menu=self.filemenu)
         self.custommenu.add_command(label="Create points")
         self.custommenu.add_command(label="Drag")
         
-        self.savemenu = Tk.Menu(self.menubar, tearoff=0)
+        self.savemenu = Tk.Menu(self.menubar, tearoff=2)
         self.menubar.add_cascade(label="Save", menu=self.filemenu)
         self.savemenu.add_command(label="Save plots")
         
