@@ -13,6 +13,8 @@ configFile = curDir + "./vor.cfg"
 config = configparser.ConfigParser()
 config.read(configFile)
 
+def clearScr():
+    os.system("clear||cls")
 
 class interface:
     def __init__(self):
@@ -27,13 +29,12 @@ class interface:
         self.filemenu = Tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
         self.filemenu.add_command(label="Open")
-        self.filemenu.add_command(label="Run")
-        self.filemenu.add_command(label="Quit")
+        self.filemenu.add_command(label="Run", command=run())
+        self.filemenu.add_command(label="Quit", command=self.root.destroy)
         
         self.custommenu = Tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Custom", menu=self.custommenu)
-        self.custommenu.add_command(label="Create points")
-        self.custommenu.add_command(label="Drag")
+        self.custommenu.add_command(label="Create points", command=self.enablecustom)
         
         self.savemenu = Tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Save", menu=self.savemenu)
@@ -42,7 +43,7 @@ class interface:
         self.can = Tk.Canvas(self.root, height=self.height, width=self.width, bg=self.bg)
         self.can.pack(side=Tk.BOTTOM)
         self.root.bind('<Motion>', self.motion)
-        self.root.bind('<Button-1>', self.clicked)
+        self.root.bind('<Escape>', self.disbalecustom)
         self.root.mainloop()
 
     def motion(self, event):
@@ -52,11 +53,20 @@ class interface:
     def clicked(self, event):
         x, y = event.x, event.y
         if config.getboolean("config", "custom-plot"):
-            self.can.create_oval(x+2,y+2,x-2,y-2, fill="red")
+            self.can.create_oval(x+2,y+2,x-2,y-2, fill="red", tags=str(x)+','+str(y))
         else:
-            os.system("clear")
+            clearScr()
+
+    def enablecustom(self):
+        config.set("config","custom-plot", "1")
+        self.root.bind('<Button-1>', self.clicked)
+    
+    def disbalecustom(self, event):
+        config.set("config","custom-plot", "0")
 
 
+class run:
+    def __init__(self):
 
 
 
