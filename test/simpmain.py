@@ -89,7 +89,6 @@ class Interface:
     def disbalecustom(self, event):
         config.set("config","custom-plot", "0")
 
-
     def randomize(self):
         config.set("config","custom-plot", "0")
         n = simpledialog.askinteger("Number of dots", self.root)
@@ -118,78 +117,53 @@ class Interface:
 
 
     def triang(self):
-        global output
+
         listetri = list(combinations(dots, 3))
+
         flag = True
+
         listed=[]
+
         trivide = []
+
         output = []
+        print(listetri)
 
         for tri in listetri:
 
+            xa = tri[0][0]
+            ya = tri[0][1]
 
-            #Premiere mediatrice
-            a1 = 2 * (tri[1][0]-tri[0][0])
-            b1 = 2 * (tri[1][1]-tri[0][1])
-            c1 = (tri[0][0])**2 + (tri[0][1])**2 - (tri[1][0])**2 - (tri[1][1])**2
+            xb = tri[1][0]
+            yb = tri[1][1]
+
+            xc = tri[2][0]
+            yc = tri[2][1]
+            
+            xab = xb-xa
+            yab = yb-ya
+
+            xac = xc-xa
+            yac = yc-ya
+
+            xi = (xa+xb)//2
+            yi = (ya+yb)//2
+
+            xj = (xa+xc)//2
+            yj = (xa+xc)//2
+
+            det = xab*yac-xac*yab
+
+            xo = ((xab*xi+yab*yi)*yac-(xac*xj+yac*yj)*yab)//det
+            yo = ((xac*xj+yac*yj)*xab-(xab*xi+yab*yi)*xac)//det
 
 
-            #Deuxieme mediatrice
-            a2 = 2 * (tri[2][0]-tri[1][0])
-            b2 = 2 * (tri[2][1]-tri[1][1])
-            c2 = (tri[1][0])**2 + (tri[1][1])**2 - (tri[2][0])**2 - (tri[2][1])**2
-
-
-            #Intersection
-            X = (c1*b2 - (c2*b1))//(a2*b1 - (a1*b2))
-            Y = (c1*a2 - (a1*c2))//(a1*b2 - (b1*a2))
-            center = [X,Y]
-            r = math.sqrt((tri[1][0] - center[0])**2 + (tri[1][1] - center[1])**2)
-
-            #Verification conditions delaunay
-            for p in dots:
-                if not(p in tri):
-                    dist = (p[0] - center[0])**2 + (p[1] - center[1])**2
-                    listed.append(dist)
-                for d in listed:
-                    if d<=r:
-                        flag=False
-                        break;
-            if flag is True:
-                trivide.append(tri)
-        output = trivide
-    
-    def listcenter(self):
-        global out1
-        liste = []
-        out1 = []
-
-        self.triang()
-
-        for p in output:
-            a1 = 2 * (p[1][0]-p[0][0])
-            b1 = 2 * (p[1][1]-p[0][1])
-            c1 = (p[0][0])**2 + (p[0][1])**2 - (p[1][0])**2 - (p[1][1])**2
-            #Deuxieme mediatrice
-            a2 = 2 * (p[2][0]-p[1][0])
-            b2 = 2 * (p[2][1]-p[1][1])
-            c2 = (p[1][0])**2 + (p[1][1])**2 - (p[2][0])**2 - (p[2][1])**2
-            #Intersection
-            X = (c1*b2 - c2*b1)//(a2*b1 - a1*b2)
-            Y = (c1*a2 - a1*c2)//(a1*b2 - b1*a2)
-            center = [X,Y]
-            liste.append(center)
-        out1 = liste
-    
-        
+            self.can.create_oval(xo,yo,xo+5,yo+5, fill="red")
+            
+      
     
     def drawtri(self):
-        self.listcenter()
-
-
-        for j in range(len(out1)):
-            x1, y1 = out1[j][0], out1[j][1]
-            self.can.create_oval(x1,y1,x1+7,y1+7, fill="red")
+        self.triang()
     
     
 
