@@ -11,7 +11,8 @@ from itertools import combinations
 import numpy as np
 import os
 import sys
-import threading
+import time
+
 import platform
 import math
 import random
@@ -22,6 +23,8 @@ if platform.system().lower() == "windows":
 else:
     dirr ="/"
 
+
+
 curDir = os.path.dirname(os.path.abspath(__file__)) + dirr
 configfile = curDir + "vor.cfg"
 config = configparser.ConfigParser()
@@ -30,13 +33,16 @@ config.read(configfile)
 def clearScr():
     os.system("clear||cls")
 
-global dots, H, W, offset,centers
+global dots, H, W, offset,centers, middles, radius
 
 dots = []
 H = 400
 W = 400
 offset = 100
 centers= []
+middles = []
+radius = []
+
 
 
 class Interface:
@@ -79,7 +85,7 @@ class Interface:
     def clicked(self, event):
         x, y = event.x, event.y
         if config.getboolean("config", "custom-plot"):
-            self.can.create_oval(x+2,y+2,x-2,y-2, fill="red", tags=str(x)+','+str(y))
+            self.create_circle(x, y, 2, "red")
             dots.append([x,y])
 
     def enablecustom(self):
@@ -98,11 +104,14 @@ class Interface:
         dots.clear()
         for k in range(n):
             x, y = random.randint(20,W-20), random.randint(10,H-10)
-            self.create_circle(x,y,2,"black")
+            self.create_circle(x,y,2,"red")
             dots.append([x,y])
 
     def create_circle(self, x, y, r, color):
         self.can.create_oval(x-r, y-r, x+r, y+r, fill=color) #, tags=str(x)+','+str(y))
+
+    def create_trans_circle(self, x, y, r):
+        self.can.create_oval(x-r, y-r, x+r, y+r, outline="blue")
 
     def openfile(self):
         self.root.filename = filedialog.askopenfilename(initialdir = dir,title = "Select file",filetypes = (("Plain text files","*.txt"),("All files","*.*")))
@@ -123,12 +132,12 @@ class Interface:
 
 
     def triang(self):
-        flag = True
         listetri = list(combinations(dots, 3))
-        centers.clear()
+        keeptri = []
 
         for j in range(len(listetri)):
-
+            flag = True
+            listedist = []
             tri = listetri[j]
 
             xa = tri[0][0]
@@ -152,40 +161,82 @@ class Interface:
             xj = (xa+xc)//2
             yj = (ya+yc)//2
 
+            xk = (xb+xc)//2
+            yk = (yb+yc)//2
+
             det = xab*yac-xac*yab
 
             xo = ((xab*xi+yab*yi)*yac-(xac*xj+yac*yj)*yab)//det
             yo = ((xac*xj+yac*yj)*xab-(xab*xi+yab*yi)*xac)//det
+            
+            r = (xi-xo)**2 + (yi-yo)**2
 
+            for n in range(len(dots)):
+                p = dots[n]
+                if not (p in tri):
+                    px, py = p[0], p[1]
+                    dist = (px-xo)**2 + (py-yo)**2
+                    listedist.append(dist)
+                    for D in listedist:
+                        if D<=r:
+                            flag=False
+                            break;
+            if flag==True:
+                keeptri.append(tri)
+
+        return keeptri
+
+    def calccent(self):
+        centers.clear()
+        radius.clear()
+        keeped = self.triang()
+        for j in range(len(keeped)):
+
+            tri = keeped[j]
+
+            xa = tri[0][0]
+            ya = tri[0][1]
+            
+            xb = tri[1][0]
+            yb = tri[1][1]
+
+            xc = tri[2][0]
+            yc = tri[2][1]
+            
+            xab = xb-xa
+            yab = yb-ya
+
+            xac = xc-xa
+            yac = yc-ya
+
+            xi = (xa+xb)//2
+            yi = (ya+yb)//2
+
+            xj = (xa+xc)//2
+            yj = (ya+yc)//2
+
+            xk = (xb+xc)//2
+            yk = (yb+yc)//2
+
+            det = xab*yac-xac*yab
+
+            xo = ((xab*xi+yab*yi)*yac-(xac*xj+yac*yj)*yab)//det
+            yo = ((xac*xj+yac*yj)*xab-(xab*xi+yab*yi)*xac)//det
+            
             centers.append([xo,yo])
-            r = math.sqrt((xo-xa)**2 + (yo-ya)**2)
-            self.create_circle(xo,yo,2, "green")
 
+            r = math.sqrt((xo-xa)**2 + (yo-ya)**2)
+            radius.append(r)
+
+            
+
+            self.can.create_line(xa,ya,xb,yb)
+            self.can.create_line(xa,ya,xc,yc)
+            self.can.create_line(xb,yb,xc,yc)           
+            self.can.create_oval(xo-r, yo-r, xo+r, yo+r, outline="blue")
 
     def drawtri(self):
-        self.triang()
-        
-        #for j in range(len(centers)):
-        #    x1, y1 = centers[j][0], centers[j][1]
-        #    x2, y2 = centers[j-1][0], centers[j-1][1]
-        #    self.can.create_line(x1,y1,x2,y2)
-    
-
-        
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
+        self.calccent()
 
 
 if __name__=="__main__":
