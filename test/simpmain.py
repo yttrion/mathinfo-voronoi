@@ -18,6 +18,9 @@ import math
 import random
 import configparser
 
+import copy
+
+
 if platform.system().lower() == "windows":
     dirr="\\"
 else:
@@ -36,8 +39,8 @@ def clearScr():
 global dots, H, W, offset,centers, middles, radius
 
 dots = []
-H = 400
-W = 400
+H = 650
+W = 650
 offset = 100
 centers= []
 middles = []
@@ -134,8 +137,10 @@ class Interface:
     def triang(self):
         listetri = list(combinations(dots, 3))
         keeptri = []
+        tested = []
 
         for j in range(len(listetri)):
+
             flag = True
             listedist = []
             tri = listetri[j]
@@ -155,41 +160,49 @@ class Interface:
             xac = xc-xa
             yac = yc-ya
 
-            xi = (xa+xb)//2
-            yi = (ya+yb)//2
+            xi = (xa+xb)/2
+            yi = (ya+yb)/2
 
-            xj = (xa+xc)//2
-            yj = (ya+yc)//2
+            xj = (xa+xc)/2
+            yj = (ya+yc)/2
 
-            xk = (xb+xc)//2
-            yk = (yb+yc)//2
+            xk = (xb+xc)/2
+            yk = (yb+yc)/2
 
             det = xab*yac-xac*yab
 
             xo = ((xab*xi+yab*yi)*yac-(xac*xj+yac*yj)*yab)//det
             yo = ((xac*xj+yac*yj)*xab-(xab*xi+yab*yi)*xac)//det
-            
-            r = (xi-xo)**2 + (yi-yo)**2
+
+            r = (xa-xo)**2 + (ya-yo)**2
+
+
 
             for n in range(len(dots)):
                 p = dots[n]
-                if not (p in tri):
+
+                if p not in tri:
                     px, py = p[0], p[1]
                     dist = (px-xo)**2 + (py-yo)**2
                     listedist.append(dist)
-                    for D in listedist:
+                    for D in listedist: 
                         if D<=r:
                             flag=False
                             break;
             if flag==True:
                 keeptri.append(tri)
+                #self.can.create_line(xa,ya,xb,yb)
+                #self.can.create_line(xa,ya,xc,yc)
+                #self.can.create_line(xb,yb,xc,yc)
 
         return keeptri
 
     def calccent(self):
+        
         centers.clear()
         radius.clear()
         keeped = self.triang()
+
         for j in range(len(keeped)):
 
             tri = keeped[j]
@@ -227,13 +240,12 @@ class Interface:
 
             r = math.sqrt((xo-xa)**2 + (yo-ya)**2)
             radius.append(r)
-
-            
-
-            self.can.create_line(xa,ya,xb,yb)
-            self.can.create_line(xa,ya,xc,yc)
-            self.can.create_line(xb,yb,xc,yc)           
-            self.can.create_oval(xo-r, yo-r, xo+r, yo+r, outline="blue")
+                    
+            self.can.create_line(xi,yi,xo,yo)
+            self.can.create_line(xj,yj,xo,yo)
+            self.can.create_line(xk,yk,xo,yo)
+        
+            #self.can.create_oval(xo-r,yo-r,xo+r,yo+r)
 
     def drawtri(self):
         self.calccent()
