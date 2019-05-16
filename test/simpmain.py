@@ -121,12 +121,11 @@ class Interface:
             W=int(f.readline())
             H=W
             self.root.destroy() 
-            Interface(W,H)
             for k in f:
                 if len(k.split())<2:
                     continue
                 x,y=k.split()
-                self.create_circle(int(x),int(y),2,"chartreuse2")
+                self.create_circle(int(x),int(y),2,"blue")
                 dots.append([int(x),int(y)])
 
     def keybind(self):

@@ -7,20 +7,27 @@ from tkinter import filedialog
 
 
 from itertools import combinations
+import pygame
 
-import sys
-import os
-import threading
-import platform
 import numpy as np
+import os
+import sys
+import time
+
+import platform
 import math
 import random
 import configparser
+
+import copy
+
 
 if platform.system().lower() == "windows":
     dirr="\\"
 else:
     dirr ="/"
+
+
 
 curDir = os.path.dirname(os.path.abspath(__file__)) + dirr
 configfile = curDir + "vor.cfg"
@@ -30,16 +37,24 @@ config.read(configfile)
 def clearScr():
     os.system("clear||cls")
 
-global dots, H, W, offset, flag, tri
+pygame.init()
+ost=pygame.mixer.Sound("startup.wav")
+
+
+global dots, H, W, offset,centers, middles, radius, fulltri
 
 dots = []
-H = 400
-W = 400
+H = 650
+W = 650
 offset = 100
-tri = None
-flag = True
+centers= []
+middles = []
+radius = []
+fulltri = []
+
 
 class Interface:
+    
     def __init__(self):
         clearScr()
         self.root = tk.Tk()
@@ -70,8 +85,10 @@ class Interface:
         self.can = tk.Canvas(self.root, height=self.height, width=self.width, bg=self.bg)
         self.can.pack(side=tk.BOTTOM)
         self.keybind()
-
+        
         self.root.mainloop()
+        
+
 
     def motion(self, event):
         x, y = event.x, event.y
@@ -79,16 +96,17 @@ class Interface:
     def clicked(self, event):
         x, y = event.x, event.y
         if config.getboolean("config", "custom-plot"):
-            self.can.create_oval(x+2,y+2,x-2,y-2, fill="red", tags=str(x)+','+str(y))
+            self.create_circle(x, y, 2, "red")
             dots.append([x,y])
 
     def enablecustom(self):
+        self.can.delete("all")
+        dots.clear()
         config.set("config","custom-plot", "1")
         self.root.bind('<Button-1>', self.clicked)
     
     def disbalecustom(self, event):
         config.set("config","custom-plot", "0")
-
 
     def randomize(self):
         config.set("config","custom-plot", "0")
@@ -96,9 +114,15 @@ class Interface:
         self.can.delete("all")
         dots.clear()
         for k in range(n):
-            x, y = random.randint(10,W-10), random.randint(10,H-10)
-            self.can.create_oval(x+2,y+2,x-2,y-2, fill="black", tags=str(x)+','+str(y))
+            x, y = random.randint(20,self.width-20), random.randint(10,self.height-10)
+            self.create_circle(x,y,2,"red")
             dots.append([x,y])
+
+    def create_circle(self, x, y, r, color):
+        self.can.create_oval(x-r, y-r, x+r, y+r, fill=color) #, tags=str(x)+','+str(y))
+
+    def create_trans_circle(self, x, y, r):
+        self.can.create_oval(x-r, y-r, x+r, y+r, outline="blue")
 
     def openfile(self):
         self.root.filename = filedialog.askopenfilename(initialdir = dir,title = "Select file",filetypes = (("Plain text files","*.txt"),("All files","*.*")))
@@ -106,104 +130,80 @@ class Interface:
     def keybind(self):
         self.root.bind('<Motion>', self.motion)
         self.root.bind('<Escape>', self.disbalecustom)
-
-
-
-
-
-
-
-
-
-
+        self.root.bind('<q>', self.root.destroy)
 
     def triang(self):
-        global output
         listetri = list(combinations(dots, 3))
-        flag = True
-        listed=[]
-        trivide = []
-        output = []
+        keeptri = []
+        tested = []
 
-        for tri in listetri:
+        for j in range(len(listetri)):
+
+            flag = True
+            listedist = []
+            tri = listetri[j]
+
+            xa = tri[0][0]
+            ya = tri[0][1]
+            
+            xb = tri[1][0]
+            yb = tri[1][1]
+
+            xc = tri[2][0]
+            yc = tri[2][1]
+            
+            xab = xb-xa
+            yab = yb-ya
+
+            xac = xc-xa
+            yac = yc-ya
+
+            xi = (xa+xb)/2
+            yi = (ya+yb)/2
+
+            xj = (xa+xc)/2
+            yj = (ya+yc)/2
+
+            xk = (xb+xc)/2
+            yk = (yb+yc)/2
+
+            det = xab*yac-xac*yab
+
+            try :
+                xo = ((xab*xi+yab*yi)*yac-(xac*xj+yac*yj)*yab)//det
+                yo = ((xac*xj+yac*yj)*xab-(xab*xi+yab*yi)*xac)//det
+            except ZeroDivisionError:
+                pass
+
+            r = (xa-xo)**2 + (ya-yo)**2
 
 
-            #Premiere mediatrice
-            a1 = 2 * (tri[1][0]-tri[0][0])
-            b1 = 2 * (tri[1][1]-tri[0][1])
-            c1 = (tri[0][0])**2 + (tri[0][1])**2 - (tri[1][0])**2 - (tri[1][1])**2
+            for n in range(len(dots)):
+                p = dots[n]
+
+                if p not in tri:
+                    px, py = p[0], p[1]
+                    dist = (px-xo)**2 + (py-yo)**2
+                    listedist.append(dist)
+                    for D in listedist: 
+                        if D<=r:
+                            flag=False
+                            break;
+            if flag==True:
+                keeptri.append(tri)
+                
+
+        return keeptri
+
+    def calccent(self):
 
 
-            #Deuxieme mediatrice
-            a2 = 2 * (tri[2][0]-tri[1][0])
-            b2 = 2 * (tri[2][1]-tri[1][1])
-            c2 = (tri[1][0])**2 + (tri[1][1])**2 - (tri[2][0])**2 - (tri[2][1])**2
 
 
-            #Intersection
-            X = (c1*b2 - (c2*b1))//(a2*b1 - (a1*b2))
-            Y = (c1*a2 - (a1*c2))//(a1*b2 - (b1*a2))
-            center = [X,Y]
-            r = math.sqrt((tri[1][0] - center[0])**2 + (tri[1][1] - center[1])**2)
-
-            #Verification conditions delaunay
-            for p in dots:
-                if not(p in tri):
-                    dist = (p[0] - center[0])**2 + (p[1] - center[1])**2
-                    listed.append(dist)
-                for d in listed:
-                    if d<=r:
-                        flag=False
-                        break;
-            if flag is True:
-                trivide.append(tri)
-        output = trivide
-    
-    def listcenter(self):
-        global out1
-        liste = []
-        out1 = []
-
-        self.triang()
-
-        for p in output:
-            a1 = 2 * (p[1][0]-p[0][0])
-            b1 = 2 * (p[1][1]-p[0][1])
-            c1 = (p[0][0])**2 + (p[0][1])**2 - (p[1][0])**2 - (p[1][1])**2
-            #Deuxieme mediatrice
-            a2 = 2 * (p[2][0]-p[1][0])
-            b2 = 2 * (p[2][1]-p[1][1])
-            c2 = (p[1][0])**2 + (p[1][1])**2 - (p[2][0])**2 - (p[2][1])**2
-            #Intersection
-            X = (c1*b2 - c2*b1)//(a2*b1 - a1*b2)
-            Y = (c1*a2 - a1*c2)//(a1*b2 - b1*a2)
-            center = [X,Y]
-            liste.append(center)
-        out1 = liste
-    
-        
-    
     def drawtri(self):
-        self.listcenter()
-
-
-        for j in range(len(out1)):
-            x1, y1 = out1[j][0], out1[j][1]
-            self.can.create_oval(x1,y1,x1+7,y1+7, fill="red")
-    
-    
-
-
-
-
-
-
-
-
-
-
-
+        self.calccent()
 
 
 if __name__=="__main__":
+    ost.play()
     Interface() 
