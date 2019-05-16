@@ -118,6 +118,19 @@ class Interface:
 
     def openfile(self):
         self.root.filename = filedialog.askopenfilename(initialdir = dir,title = "Select file",filetypes = (("Plain text files","*.txt"),("All files","*.*")))
+        with open(self.root.filename) as f:
+            dots.clear()
+            self.width=int(f.readline())
+            self.height=self.width
+            self.can.destroy() 
+            self.can=tk.Canvas(self.root,width=self.width,height=self.height,bg=self.bg)
+            self.can.pack(side=tk.BOTTOM)
+            for k in f:
+                if len(k.split())<2:
+                    continue
+                x,y=k.split()
+                self.create_circle(int(x),int(y),2,"chartreuse2")
+                dots.append([int(x),int(y)])
 
     def keybind(self):
         self.root.bind('<Motion>', self.motion)
