@@ -39,8 +39,6 @@ def clearScr():
 global dots, H, W, offset,centers, middles, radius
 
 dots = []
-H = 650
-W = 650
 offset = 100
 centers= []
 middles = []
@@ -49,7 +47,7 @@ radius = []
 
 
 class Interface:
-    def __init__(self):
+    def __init__(self,W,H):
         clearScr()
         self.root = tk.Tk()
         self.width = W
@@ -120,11 +118,10 @@ class Interface:
         self.root.filename = filedialog.askopenfilename(initialdir = dir,title = "Select file",filetypes = (("Plain text files","*.txt"),("All files","*.*")))
         with open(self.root.filename) as f:
             dots.clear()
-            self.width=int(f.readline())
-            self.height=self.width
-            self.can.destroy() 
-            self.can=tk.Canvas(self.root,width=self.width,height=self.height,bg=self.bg)
-            self.can.pack(side=tk.BOTTOM)
+            W=int(f.readline())
+            H=W
+            self.root.destroy() 
+            Interface(W,H)
             for k in f:
                 if len(k.split())<2:
                     continue
@@ -265,4 +262,4 @@ class Interface:
 
 
 if __name__=="__main__":
-    Interface() 
+    Interface(650,650) 
