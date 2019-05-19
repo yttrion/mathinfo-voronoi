@@ -34,7 +34,8 @@ def clearScr():
 
 
 pygame.init()
-ost = pygame.mixer.Sound(curDir + "src" + dirr + "startup.wav")
+startup = pygame.mixer.Sound(curDir + "src" + dirr + "startup.wav")
+#ost = pygame.mixer.Sound(curDir + "src" + dirr + "main.mp3")
 
 global dots, keeptri, version, thall
 dots, keeptri, thall, version = [], [], [], config.get("config", "version")
@@ -46,40 +47,36 @@ class AIO:
         clearScr()
 
         self.root = tk.Tk()
-        self.width, self.height = config.getint(
-            "config", "size"), config.getint("config", "size")
+        self.width, self.height = config.getint("config", "size"), config.getint("config", "size")
         self.size = 2
 
         self.root.geometry(str(self.height)+"x"+str(self.height)+"+100+100")
 
         self.bg = "grey"
-        self.title = self.root.title("Voronoï")
+        self.title = self.root.title("【ＶＯＲＯＮＯＩ】")
         self.menubar = tk.Menu(self.root)
         self.root.config(menu=self.menubar)
 
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
-        self.menubar.add_cascade(label="Fichier", menu=self.filemenu)
+        self.menubar.add_cascade(label="F i c h i e r", menu=self.filemenu)
         self.filemenu.add_command(label="Ouvrir", command=self.openfile)
         self.filemenu.add_command(label="Sauver")
         self.filemenu.add_command(label="Quitter", command=self.root.destroy)
 
         self.custommenu = tk.Menu(self.menubar, tearoff=0)
-        self.menubar.add_cascade(label="Edition", menu=self.custommenu)
-        self.custommenu.add_command(
-            label="Création", command=self.enablecustom)
+        self.menubar.add_cascade(label="E d i t i o n", menu=self.custommenu)
+        #self.custommenu.add_command(label="Création", command=self.enablecustom)
         self.custommenu.add_command(label="Aléatoire", command=self.randomize)
         self.custommenu.add_command(label="Voronoï", command=self.voronoi)
         self.custommenu.add_command(label="Delaunay", command=self.Delaunay)
-        self.custommenu.add_command(
-            label="Triangulation", command=self.Triangles)
+        self.custommenu.add_command(label="Triangulation", command=self.Triangles)
 
         self.helpmenu = tk.Menu(self.menubar, tearoff=0)
-        self.menubar.add_cascade(label="Aide", menu=self.helpmenu)
+        self.menubar.add_cascade(label="A i d e", menu=self.helpmenu)
         self.helpmenu.add_command(label="A propos", command=self.aprops)
         self.helpmenu.add_command(label="Enfer du CPU", command=self.cpuhell)
 
-        self.can = tk.Canvas(self.root, height=self.height,
-                             width=self.width, bg=self.bg)
+        self.can = tk.Canvas(self.root, height=self.height,width=self.width, bg=self.bg)
         self.can.pack(side=tk.BOTTOM)
         self.keybind()
         self.root.mainloop()
@@ -92,10 +89,15 @@ class AIO:
 
     def clicked(self, event):
         x, y = event.x, event.y
+        if len(dots)==15:
+            self.disbalecustom(self.motion)
+            messagebox.showinfo("Info", "Pas plus de 15 points sur le canvas")
         if config.getboolean("config", "custom-plot"):
             self.create_circle(x, y, 2, "black")
             col = '#%02x%02x%02x' % self.colourize()
             dots.append([x, y, col])
+
+
 
     def enablecustom(self):
         self.can.delete("all")
@@ -108,12 +110,15 @@ class AIO:
 
     def randomize(self):
         config.set("config", "custom-plot", "0")
-        n = simpledialog.askinteger(
-            "Number of dots", self.root, minvalue=3, maxvalue=15)
+        n = simpledialog.askinteger("Nombre de points", "Entrez le nombre de points [3-15]",  minvalue=3, maxvalue=15)
         self.can.delete("all")
         dots.clear()
-        if n > 15:
-            n = 15
+
+        dots.append([-1000000,1000000])
+        dots.append([1000000,-1000000])
+        dots.append([-1000000,-1000000])
+        dots.append([1000000,1000000])
+
         for k in range(n):
             x, y = random.randint(
                 20, self.width-20), random.randint(10, self.height-10)
@@ -243,7 +248,7 @@ class AIO:
 
             if flag == True:
                 keeptri.append(tri)
-                thall.append([xo, yo, r])
+                thall.append([xo, yo, math.sqrt(r)])
                 if var == 1:
                     self.can.create_line(xa, ya, xb, yb, fill="green", width=2)
                     self.can.create_line(xc, yc, xb, yb, fill="green", width=2)
@@ -257,26 +262,26 @@ class AIO:
             selected = keeptri[i]
             A, B, C = [keeptri[i][0][0], keeptri[i][0][1]], [keeptri[i][1][0], keeptri[i][1][1]], [keeptri[i][2][0], keeptri[i][2][1]]
 
+
             for j in range(len(keeptri)):
 
                 if i != j:
                     D, E, F = [keeptri[j][0][0], keeptri[j][0][1]], [keeptri[j][1][0], keeptri[j][1][1]], [keeptri[j][2][0], keeptri[j][2][1]]
 
                     # Méthode de bourrin tri adj
-                    if ((A in (D, E, F)) and (B in (D, E, F))) or ((A in (D, E, F)) and (C in (D, E, F))) or ((C in (D, E, F)) and (B in (D, E, F))):
-
-                        self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="yellow", width=2)
-
-
-                    for k in range(len(keeptri)):
-                        G, H, I = [keeptri[k][0][0], keeptri[k][0][1]],[keeptri[k][1][0], keeptri[k][1][1]], [keeptri[k][2][0], keeptri[k][2][1]]
-
-                        #if
+                    if ((A in (D, E, F)) and (B in (D, E, F)))  or ((A in (D, E, F)) and (C in (D, E, F))) or ((C in (D, E, F)) and (B in (D, E, F))):
+                        self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="chartreuse2", width=2)
+                        #a = 
+                        #b =
 
 
 
 
-
+                    #TODO
+                    # Ajouter test pr savoir si centre ds tri
+                    # sinon créer ligne depuis centre perpend au coté le plus proche
+                    # jusqu'à l'infini
+                    
 
 
 
@@ -331,6 +336,7 @@ class AIO:
 
 
 if __name__ == "__main__":
-    ost.play()          # 【A】【E】【S】【T】【H】【E】【T】【I】【C】【S】
+    startup.play()          # 【A】【E】【S】【T】【H】【E】【T】【I】【C】【S】
     # time.sleep(1.7)     #Ouvre avec le bon timing
     AIO()
+    #ost.play()
