@@ -1,28 +1,27 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tkinter as tk
+import tkinter as tk  # Pour éviter de tout importer
 
 from tkinter import simpledialog, filedialog, messagebox
+
 from itertools import combinations
 
-import numpy as np
-
 import os
-import sys
 import time
-import pygame
-
 import platform
-import math
-import random
 import configparser
 
-# Selection au cas où le script est lancé dans un système UNIX
-if platform.system().lower() == "windows":
-    dirr = "\\"
-else:
-    dirr = "/"
+import pygame
+
+import math
+import random
+
+
+# Selection au cas où le script est lancé dans un système UNIX (OSX, BSD, Linux)
+dirr = "\\" if platform.system().lower(
+) == "windows" else "/"  # IF/ELSE mais bien écrit
+
 
 curDir = os.path.dirname(os.path.abspath(__file__)) + dirr
 configfile = curDir + "src" + dirr + "vor.cfg"
@@ -37,11 +36,8 @@ def clearScr():
 pygame.init()
 ost = pygame.mixer.Sound(curDir + "src" + dirr + "startup.wav")
 
-#Height, Width = config.getint("config", "height"), config.getint("config", "width")
-
 global dots, keeptri, version, thall
-dots, keeptri, thall = [], [], []
-version = config.get("config", "version")
+dots, keeptri, thall, version = [], [], [], config.get("config", "version")
 
 
 class AIO:
@@ -50,8 +46,8 @@ class AIO:
         clearScr()
 
         self.root = tk.Tk()
-        self.width = config.getint("config", "width")
-        self.height = config.getint("config", "height")
+        self.width, self.height = config.getint(
+            "config", "size"), config.getint("config", "size")
         self.size = 2
 
         self.root.geometry(str(self.height)+"x"+str(self.height)+"+100+100")
@@ -65,7 +61,6 @@ class AIO:
         self.menubar.add_cascade(label="Fichier", menu=self.filemenu)
         self.filemenu.add_command(label="Ouvrir", command=self.openfile)
         self.filemenu.add_command(label="Sauver")
-        self.filemenu.add_command(label="Run")
         self.filemenu.add_command(label="Quitter", command=self.root.destroy)
 
         self.custommenu = tk.Menu(self.menubar, tearoff=0)
@@ -73,7 +68,7 @@ class AIO:
         self.custommenu.add_command(
             label="Création", command=self.enablecustom)
         self.custommenu.add_command(label="Aléatoire", command=self.randomize)
-        self.custommenu.add_command(label="Balayage")
+        self.custommenu.add_command(label="Voronoï", command=self.voronoi)
         self.custommenu.add_command(label="Delaunay", command=self.Delaunay)
         self.custommenu.add_command(
             label="Triangulation", command=self.Triangles)
@@ -113,11 +108,12 @@ class AIO:
 
     def randomize(self):
         config.set("config", "custom-plot", "0")
-        n = simpledialog.askinteger("Number of dots", self.root, minvalue = 3, maxvalue = 15)
+        n = simpledialog.askinteger(
+            "Number of dots", self.root, minvalue=3, maxvalue=15)
         self.can.delete("all")
         dots.clear()
         if n > 15:
-            n=15
+            n = 15
         for k in range(n):
             x, y = random.randint(
                 20, self.width-20), random.randint(10, self.height-10)
@@ -144,29 +140,29 @@ class AIO:
     def openfile(self):
         filename = filedialog.askopenfilename(initialdir=dir, title="Select file", filetypes=(
             ("Plain text files", "*.txt"), ("All files", "*.*")))
-        f = open(filename)
-        dots.clear()
-        content = f.readlines()
-        print(content[0])
-        config.set("config", "width", str(content[0]))
-        config.set("config", "height", str(content[0]))
-        self.root.destroy()
-        AIO()
-        
 
-
+        if len(filename):
+            if filename[:-3] == "txt":
+                f = open(filename)
+                content = f.readlines()
+                print(content[0])
+                config.set("config", "size", str(content[0]))
+                self.root.destroy()
+                dots.clear()
+                thall.clear()
+                keeptri.clear()
+                AIO()
+            else:
+                messagebox.showerror(
+                    "Erreur", "Format de fichier non reconnu.")
 
     def keybind(self):
         self.root.bind('<Motion>', self.motion)
         self.root.bind('<Escape>', self.disbalecustom)
 
-        # VIM-like keybind
-        self.root.bind('<q>', self.root.destroy)
-
     def aprops(self):
         messagebox.showinfo(
-            "A propos", "Version: %s\nAuteurs:\n\rPierre-Yves Douault\nVincent Leurent\nPierre-Antoine Soyer" % (version))
-
+            "A propos", "Version:\t%s\nAuteurs:\tPierre-Yves Douault\n\tVincent Leurent\n\tPierre-Antoine Soyer" % (version))
 
     def Delaunay(self):  # Triangulation de Delaunay
 
@@ -200,7 +196,7 @@ class AIO:
             self.create_trans_circle(xo, yo, r)
             self.create_circle(xo, yo, 4, "green")
 
-    def Triangles(self):  # Selection des triangles utilisables
+    def Triangles(self, var=1):  # Selection des triangles utilisables
         self.disbalecustom(self.motion)
         listetri = list(combinations(dots, 3))
         keeptri.clear()
@@ -248,11 +244,39 @@ class AIO:
             if flag == True:
                 keeptri.append(tri)
                 thall.append([xo, yo, r])
-                self.can.create_line(xa, ya, xb, yb, fill="green", width=2)
-                self.can.create_line(xc, yc, xb, yb, fill="green", width=2)
-                self.can.create_line(xa, ya, xc, yc, fill="green", width=2)
+                if var == 1:
+                    self.can.create_line(xa, ya, xb, yb, fill="green", width=2)
+                    self.can.create_line(xc, yc, xb, yb, fill="green", width=2)
+                    self.can.create_line(xa, ya, xc, yc, fill="green", width=2)
 
         return keeptri
+
+    def voronoi(self):
+        self.Triangles(0)
+        for i in range(len(keeptri)):
+            selected = keeptri[i]
+            A, B, C = [keeptri[i][0][0], keeptri[i][0][1]], [keeptri[i][1][0], keeptri[i][1][1]], [keeptri[i][2][0], keeptri[i][2][1]]
+
+            for j in range(len(keeptri)):
+
+                if i != j:
+                    D, E, F = [keeptri[j][0][0], keeptri[j][0][1]], [keeptri[j][1][0], keeptri[j][1][1]], [keeptri[j][2][0], keeptri[j][2][1]]
+
+                    # Méthode de bourrin tri adj
+                    if ((A in (D, E, F)) and (B in (D, E, F))) or ((A in (D, E, F)) and (C in (D, E, F))) or ((C in (D, E, F)) and (B in (D, E, F))):
+
+                        self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="yellow", width=2)
+
+
+                    for k in range(len(keeptri)):
+                        G, H, I = [keeptri[k][0][0], keeptri[k][0][1]],[keeptri[k][1][0], keeptri[k][1][1]], [keeptri[k][2][0], keeptri[k][2][1]]
+
+                        #if
+
+
+
+
+
 
 
 
@@ -267,6 +291,7 @@ class AIO:
 
 
     # Pire système de scan de tous les temps
+
     def pixeler(self, i, j):
 
         distance = 2 * self.width
@@ -306,6 +331,6 @@ class AIO:
 
 
 if __name__ == "__main__":
-    ost.play()
-    time.sleep(1.7)
+    ost.play()          # 【A】【E】【S】【T】【H】【E】【T】【I】【C】【S】
+    # time.sleep(1.7)     #Ouvre avec le bon timing
     AIO()
