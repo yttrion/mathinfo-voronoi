@@ -37,10 +37,10 @@ def clearScr():
 pygame.init()
 ost = pygame.mixer.Sound(curDir + "src" + dirr + "startup.wav")
 
-global dots, H, W, keeptri, version, thall
+#Height, Width = config.getint("config", "height"), config.getint("config", "width")
 
+global dots, keeptri, version, thall
 dots, keeptri, thall = [], [], []
-H, W = config.getint("config", "height"), config.getint("config", "width")
 version = config.get("config", "version")
 
 
@@ -50,11 +50,11 @@ class AIO:
         clearScr()
 
         self.root = tk.Tk()
-        self.width = W
-        self.height = H
+        self.width = config.getint("config", "width")
+        self.height = config.getint("config", "height")
         self.size = 2
 
-        self.root.geometry(str(H)+"x"+str(W)+"+100+100")
+        self.root.geometry(str(self.height)+"x"+str(self.height)+"+100+100")
 
         self.bg = "grey"
         self.title = self.root.title("Voronoï")
@@ -142,8 +142,19 @@ class AIO:
         self.can.create_oval(x-r, y-r, x+r, y+r, outline="blue")
 
     def openfile(self):
-        self.root.filename = filedialog.askopenfilename(initialdir=dir, title="Select file", filetypes=(
+        filename = filedialog.askopenfilename(initialdir=dir, title="Select file", filetypes=(
             ("Plain text files", "*.txt"), ("All files", "*.*")))
+        f = open(filename)
+        dots.clear()
+        content = f.readlines()
+        print(content[0])
+        config.set("config", "width", str(content[0]))
+        config.set("config", "height", str(content[0]))
+        self.root.destroy()
+        AIO()
+        
+
+
 
     def keybind(self):
         self.root.bind('<Motion>', self.motion)
