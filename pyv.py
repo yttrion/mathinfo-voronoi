@@ -41,7 +41,7 @@ startup = pygame.mixer.Sound(curDir + "src" + dirr + "startup.wav")
 
 
 global dots, keeptri, version, thall, offset
-dots, keeptri, thall, version, offset = [], [], [], config.get("config", "version"), 1000000*config.getint("config", "size")
+dots, keeptri, thall, version, offset, colors = [], [], [], config.get("config", "version"), 10000000, []
 
 
 class AIO:
@@ -49,7 +49,6 @@ class AIO:
     def __init__(self, point=[]):
         clearScr()
         self.pt = point
-
 
         self.root = tk.Tk()
         self.width, self.height = config.getint("config", "size"), config.getint("config", "size")
@@ -64,8 +63,6 @@ class AIO:
         self.can = tk.Canvas(self.root, height=self.height,width=self.width, bg=self.bg)
         self.can.pack(side=tk.BOTTOM)
         self.keybind()
-        if len(self.pt):
-            self.update()
 
         self.menubar = tk.Menu(self.root)
         self.root.config(menu=self.menubar)
@@ -88,10 +85,12 @@ class AIO:
         self.menubar.add_cascade(label="Aide", menu=self.helpmenu)
         self.helpmenu.add_command(label="A propos", command=self.aprops)
         self.helpmenu.add_command(label="Enfer du CPU", command=self.cpuhell)
+    
+        if len(self.pt):
+            self.update()
 
         self.root.mainloop()
 
- 
     def update(self):
         for i in range(len(self.pt)):
             self.create_circle(self.pt[i][0], self.pt[i][1], 2, "black")
@@ -109,7 +108,8 @@ class AIO:
                 self.create_circle(x, y, 2, "black")
                 
                 col = '#%02x%02x%02x' % self.colourize()
-                dots.append([x, y, col])
+                dots.append([x, y])
+                colors.append(col)
 
     def enablecustom(self):
         self.can.delete("all")
@@ -122,7 +122,7 @@ class AIO:
 
     def randomize(self):
         config.set("config", "custom-plot", "0")
-        n = simpledialog.askinteger("Nombre de points", "Entrez le nombre de points [3-15]",  minvalue=3) #, maxvalue=15)
+        n = simpledialog.askinteger("Nombre de points", "Entrez le nombre de points [2-15]",  minvalue=2)
         self.can.delete("all")
         dots.clear()
 
@@ -130,7 +130,8 @@ class AIO:
             x, y = random.randint(20, self.width-20), random.randint(20, self.height-20)
             self.create_circle(x, y, 2, "black")
             col = '#%02x%02x%02x' % self.colourize()
-            dots.append([x, y, col])
+            dots.append([x, y])
+            colors.append(col)
 
     def colourize(self):
         a = random.randint(0, 255)
@@ -148,8 +149,7 @@ class AIO:
         self.can.create_oval(x-r, y-r, x+r, y+r, outline="blue")
 
     def openfile(self):
-        filename = filedialog.askopenfilename(initialdir=dir, title="Select file", filetypes=(
-            ("Plain text files", "*.txt"), ("All files", "*.*")))
+        filename = filedialog.askopenfilename(initialdir=dir, title="Select file", filetypes=(("Plain text files", "*.txt"), ("All files", "*.*")))
 
         if len(filename)!=0:
             coord = []
@@ -163,11 +163,9 @@ class AIO:
                 f.close()   
                 self.root.destroy()
                 AIO(coord)
-                
-                
+                    
             else:
-                messagebox.showerror(
-                    "Erreur", "Format de fichier non reconnu.")
+                messagebox.showerror("Erreur", "Format de fichier non reconnu.")
 
     def keybind(self):
         self.root.bind('<Motion>', self.motion)
@@ -190,18 +188,6 @@ class AIO:
         
         output.close()
 
-        
-
-
-
-
-
-
-
-
-
-
-
     def Delaunay(self):  # Triangulation de Delaunay
 
         keeped = self.Triangles(0)
@@ -219,19 +205,17 @@ class AIO:
 
             xi, yi = (xa+xb)/2, (ya+yb)/2
             xj, yj = (xa+xc)/2, (ya+yc)/2
-            xk, yk = (xb+xc)/2, (yb+yc)/2
 
             det = 1 if xab*yac-xac*yab==0 else xab*yac-xac*yab
             
-            xo = ((xab*xi+yab*yi)*yac-(xac*xj+yac*yj)*yab)//det
-            yo = ((xac*xj+yac*yj)*xab-(xab*xi+yab*yi)*xac)//det
-
+            xo = ((xab*xi+yab*yi)*yac-(xac*xj+yac*yj)*yab)/det
+            yo = ((xac*xj+yac*yj)*xab-(xab*xi+yab*yi)*xac)/det
 
             r = self.Dist([xo, yo], [xa, ya])
             self.create_trans_circle(xo, yo, r)
             self.create_circle(xo, yo, 4, "green")
 
-    def Triangles(self, var=1):  # Selection des triangles utilisables
+    def Triangles(self, tria=1):  # Selection des triangles utilisables
 
         self.disbalecustom(self.motion)
 
@@ -240,11 +224,10 @@ class AIO:
         dots.append([-offset,-offset])
         dots.append([offset,offset])
 
-
         listetri = list(combinations(dots, 3))
         keeptri.clear()
         thall.clear()
-
+        clearScr()
 
         for j in range(len(listetri)):
 
@@ -256,24 +239,18 @@ class AIO:
             xb, yb = tri[1][0], tri[1][1]
             xc, yc = tri[2][0], tri[2][1]
 
-
             xab, yab = xb-xa, yb-ya
             xac, yac = xc-xa, yc-ya
 
-            xi, yi = (xa+xb)//2, (ya+yb)//2
-            xj, yj = (xa+xc)//2, (ya+yc)//2
-            xk, yk = (xb+xc)//2, (yb+yc)//2
-
+            xi, yi = (xa+xb)/2, (ya+yb)/2
+            xj, yj = (xa+xc)/2, (ya+yc)/2
 
             det = 1 if xab*yac-xac*yab==0 else xab*yac-xac*yab
 
-
-            xo = ((xab*xi+yab*yi)*yac-(xac*xj+yac*yj)*yab)//det
-            yo = ((xac*xj+yac*yj)*xab-(xab*xi+yab*yi)*xac)//det
-
+            xo = ((xab*xi+yab*yi)*yac-(xac*xj+yac*yj)*yab)/det
+            yo = ((xac*xj+yac*yj)*xab-(xab*xi+yab*yi)*xac)/det
 
             r = self.Dist([xa, ya],[xo, yo])
-
 
             for n in range(len(dots)):
 
@@ -281,7 +258,7 @@ class AIO:
 
                 if p not in tri:
                     px, py = p[0], p[1]
-                    dist = self.Dist([xo, yo], [px, py])
+                    dist = self.Dist([px, py], [xo, yo])
                     listedist.append(dist)
 
                     for D in listedist:
@@ -294,23 +271,20 @@ class AIO:
                 keeptri.append(tri)
                 thall.append([xo, yo])
                 
-                if var == 1:
+                if tria == 1:
+
                     self.can.create_line(xa, ya, xb, yb, fill="green", width=2)
                     self.can.create_line(xc, yc, xb, yb, fill="green", width=2)
                     self.can.create_line(xa, ya, xc, yc, fill="green", width=2)
 
+        print("%s triangles saved" % len(keeptri))
         return keeptri
-
-
-
-
-
-
-
+        
 
     def voronoi(self):
 
         keeped = self.Triangles(0)
+        tag = 0
 
         for i in range(len(keeped)):
 
@@ -320,28 +294,31 @@ class AIO:
 
             for j in range(len(keeped)):
 
-                if i != j:
-
                     D = [keeped[j][0][0], keeped[j][0][1]]
                     E = [keeped[j][1][0], keeped[j][1][1]]
                     F = [keeped[j][2][0], keeped[j][2][1]]
 
                     TEST = [D, E, F]
 
+                    if i != j :
+                    
 
-                    # Méthode de bourrin triangles adjacents
-                    if   (A in TEST) and (B in TEST):
+                        # Méthode de bourrin triangles adjacents
+                        if   (A in TEST) and (B in TEST):
 
-                        self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="chartreuse2", width=2)
+                            self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="red", width=2)
+                            tag +=1
 
-                    elif (A in TEST) and (C in TEST):
+                        elif (C in TEST) and (A in TEST):
 
-                        self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="chartreuse2", width=2)
+                            self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="red", width=2)
+                            tag +=1
 
-                    elif (C in TEST) and (B in TEST):
+                        elif (C in TEST) and (B in TEST):
 
-                        self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="chartreuse2", width=2)
-         
+                            self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="red", width=2)
+                            tag +=1       
+        print("%s lines made" % tag)  
 
 
 
@@ -382,7 +359,7 @@ class AIO:
                 nearest = k
 
             try :
-                tempcol = dots[nearest][2]
+                tempcol = colors[nearest]
 
                 self.can.create_rectangle(i, j, i+1, j+1, fill=tempcol, outline=tempcol)
             except :
@@ -398,7 +375,7 @@ class AIO:
             for j in range(0, self.height):
                 self.pixeler(i+1, j+1)
 
-        for i in range(len(dots)):
+        for i in range(10):
             self.create_circle(dots[i][0], dots[i][1], 2, "black")
 
 
