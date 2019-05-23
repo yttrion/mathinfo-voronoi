@@ -34,8 +34,8 @@ config.read(configfile)
 
 class Startup:
     s = config.getint("config", "size")
-    sp.Splashscreen(s)
-
+    sp.Splashscreen(dirr)
+    vor.Main(s, dirr)
 
 
 
