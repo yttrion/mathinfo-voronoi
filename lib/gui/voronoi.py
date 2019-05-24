@@ -73,7 +73,7 @@ class Main:
         self.menubar.add_cascade(label="Edition", menu=self.custommenu)
         self.custommenu.add_command(label="Création", command=self.enablecustom)
         self.custommenu.add_command(label="Aléatoire", command=self.randomize)
-        self.custommenu.add_command(label="Voronoï")
+        self.custommenu.add_command(label="Voronoï", command=self.runvor)
         self.custommenu.add_command(label="Delaunay", command=self.rundel)
         self.custommenu.add_command(label="Triangulation", command=self.runtri)
 
@@ -158,6 +158,9 @@ class Main:
 
     def rundel(self):
         calc.Delaunay(dots, self.offset, self.can)
+
+    def runvor(self):
+        calc.Voronoi(dots, self.offset, self.can)
 
 
 

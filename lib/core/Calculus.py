@@ -120,37 +120,28 @@ class Delaunay:
         Triangulation(self.dots, self.offset, self.can, 0)
 
 
-
         for j in range(len(keeped)):
-    
 
             tri = keeped[j]
-
 
             xa, ya = tri[0][0], tri[0][1]
             xb, yb = tri[1][0], tri[1][1]
             xc, yc = tri[2][0], tri[2][1]
 
-
             xab, yab = xb-xa, yb-ya
             xac, yac = xc-xa, yc-ya
-
 
             xi, yi = (xa+xb)/2, (ya+yb)/2
             xj, yj = (xa+xc)/2, (ya+yc)/2
 
-
             det = 1 if xab*yac-xac*yab==0 else xab*yac-xac*yab
-            
 
             xo = ((xab*xi+yab*yi)*yac-(xac*xj+yac*yj)*yab)/det
             yo = ((xac*xj+yac*yj)*xab-(xab*xi+yab*yi)*xac)/det
 
-
             r = Dist([xo, yo], [xa, ya])
             self.create_trans_circle(xo, yo, r)
             self.create_circle(xo, yo, 4, "green")        
-
 
     def create_circle(self, x, y, r, color):
         self.can.create_oval(x-r, y-r, x+r, y+r, fill=color, tags=str(x)+","+str(y))
@@ -161,4 +152,45 @@ class Delaunay:
 
 
 class Voronoi:
-    print("e")
+    global keeped
+    def __init__(self, dots, offset, can):
+        self.dots = dots
+        self.offset = offset
+        self.can = can
+        tag=0
+
+        Triangulation(self.dots, self.offset, self.can, 0)
+
+        for i in range(len(keeped)):
+    
+            A = [keeped[i][0][0], keeped[i][0][1]]
+            B = [keeped[i][1][0], keeped[i][1][1]]
+            C = [keeped[i][2][0], keeped[i][2][1]]
+
+            for j in range(len(keeped)):
+
+                    D = [keeped[j][0][0], keeped[j][0][1]]
+                    E = [keeped[j][1][0], keeped[j][1][1]]
+                    F = [keeped[j][2][0], keeped[j][2][1]]
+
+                    TEST = [D, E, F]
+
+                    if i != j :
+                    
+
+                        # Méthode de bourrin triangles adjacents
+                        if   (A in TEST) and (B in TEST):
+
+                            self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="red", width=2)
+                            tag +=1
+
+                        elif (C in TEST) and (A in TEST):
+
+                            self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="red", width=2)
+                            tag +=1
+
+                        elif (C in TEST) and (B in TEST):
+
+                            self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="red", width=2)
+                            tag +=1       
+        print("%s lines made" % tag) 

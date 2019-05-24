@@ -40,18 +40,19 @@ startup = pygame.mixer.Sound(curDir + "src" + dirr + "startup.wav")
 
 
 
-global dots, keeptri, version, thall, offset
+global dots, keeptri, version, thall, offset, size
 dots, keeptri, thall, version, colors, offset = [], [], [], config.get("config", "version"), [], 1000000
 
+size = config.getint("config", "size")
 
 class AIO:
 
-    def __init__(self, point=[]):
+    def __init__(self, size, point=[]):
         clearScr()
         self.pt = point
 
         self.root = tk.Tk()
-        self.width, self.height = config.getint("config", "size"), config.getint("config", "size")
+        self.width, self.height = size, size
         self.size = 2
 
         self.root.geometry(str(self.height)+"x"+str(self.height)+"+25+25")
@@ -94,6 +95,9 @@ class AIO:
     def update(self):
         for i in range(len(self.pt)):
             self.create_circle(self.pt[i][0], self.pt[i][1], 2, "black")
+        dots = []
+        dots = self.pt
+        print(dots)
 
     def motion(self, event):
         x, y = event.x, event.y
@@ -160,9 +164,9 @@ class AIO:
                     temp = content[i].split()
                     coord.append([int(temp[0]), int(temp[1])])
                 config.set("config", "size", str(content[0]))
-                f.close()   
+                f.close()
                 self.root.destroy()
-                AIO(coord)
+                self.__init__(content[0], coord)
                     
             else:
                 messagebox.showerror("Erreur", "Format de fichier non reconnu.")
@@ -380,4 +384,4 @@ class AIO:
 
 if __name__ == "__main__":
     startup.play()          # 【A】【E】【S】【T】【H】【E】【T】【I】【C】【S】
-    AIO()
+    AIO(size)
