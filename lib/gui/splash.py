@@ -1,7 +1,5 @@
 import tkinter as tk
 
-import pygame
-
 import time
 import sys
 import os
@@ -23,9 +21,6 @@ class Splashscreen:
     def __init__(self, dirr):
 
         curDir = os.path.dirname(os.path.abspath(__file__)) + dirr
-        pygame.init()
-        splash = pygame.mixer.Sound(curDir + "sounds" + dirr + "splash.wav")
-        splash.play()
         clearScr()
 
         self.root = tk.Tk()

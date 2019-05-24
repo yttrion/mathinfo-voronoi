@@ -12,7 +12,7 @@ import time
 import platform
 import configparser
 
-import pygame, time
+import time
 
 import math
 import random
@@ -38,10 +38,6 @@ class Main:
         self.config = configparser.ConfigParser()
         self.config.read(configfile)
 
-        
-        pygame.init()
-        main = pygame.mixer.Sound(self.curDir + "sounds" + self.dirr + "Mii.ogg")
-        main.play(-1)
         clearScr()
 
         self.offset = 100000
