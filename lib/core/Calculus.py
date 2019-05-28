@@ -8,15 +8,11 @@ from tkinter import simpledialog, filedialog, messagebox
 from itertools import combinations
 
 import os
-import time
 import platform
 import configparser
 
-import time
-
 import math
 import random
-
 
 import lib.gui.voronoi as vor
 
@@ -32,7 +28,7 @@ def Dist(p1, p2):
 
 class Triangulation:
 
-    def __init__(self, dots, offset, can, tria=1, clean=0):
+    def __init__(self, dots, offset, can, config, ntheme, tria=1, clean=0):
 
         global keeped
 
@@ -40,7 +36,9 @@ class Triangulation:
         self.can = can
         self.tria = tria
         self.dots = dots
-        
+        self.config = config
+        themes = ["default","solarized","gruvbox", "onedark", "vapor"]
+        self.theme = themes[ntheme]
         self.can.delete("all")
 
 
@@ -108,14 +106,12 @@ class Triangulation:
                 thall.append([xo, yo])
                 
                 if self.tria == 1:
-                    self.can.create_line(xa, ya, xb, yb, fill="chartreuse2", width=2)
-                    self.can.create_line(xc, yc, xb, yb, fill="chartreuse2", width=2)
-                    self.can.create_line(xa, ya, xc, yc, fill="chartreuse2", width=2)
+                    self.can.create_line(xa, ya, xb, yb, fill=self.config.get(str(self.theme), "tri"), width=2)
+                    self.can.create_line(xc, yc, xb, yb, fill=self.config.get(str(self.theme), "tri"), width=2)
+                    self.can.create_line(xa, ya, xc, yc, fill=self.config.get(str(self.theme), "tri"), width=2)
                     
-
-        print("%s triangles saved" % len(keeptri))
         for i in range(len(self.dots)):
-            self.can.create_oval(self.dots[i][0]-2, self.dots[i][1]-2, self.dots[i][0]+2, self.dots[i][1]+2, fill="black", outline="black")
+            self.can.create_oval(self.dots[i][0]-2, self.dots[i][1]-2, self.dots[i][0]+2, self.dots[i][1]+2, fill=self.config.get(str(self.theme), "dots"), outline=self.config.get(str(self.theme), "dots"))
         return keeptri
 
 
@@ -126,15 +122,18 @@ class Triangulation:
 
 class Delaunay:
     global keeped
-    def __init__(self, dots, offset, can):
+    def __init__(self, dots, offset, can, config, ntheme):
         self.dots = dots
         self.offset = offset
         self.can = can
+        self.config = config
+        themes = ["default","solarized","gruvbox", "onedark", "vapor"]
+        self.theme = themes[ntheme]
         self.can.delete("all")
         for i in range(len(dots)):
-            self.can.create_oval(dots[i][0]-2, dots[i][1]-2, dots[i][0]+2, dots[i][1]+2, fill="black", outline="black")
+            self.can.create_oval(dots[i][0]-2, dots[i][1]-2, dots[i][0]+2, dots[i][1]+2, fill=self.config.get(str(self.theme), "dots"), outline=self.config.get(str(self.theme), "dots"))
 
-        Triangulation(self.dots, self.offset, self.can, 0)
+        Triangulation(self.dots, self.offset, self.can, self.config, ntheme, 0)
 
 
         for j in range(len(keeped)):
@@ -158,28 +157,33 @@ class Delaunay:
 
             r = Dist([xo, yo], [xa, ya])
             self.create_trans_circle(xo, yo, r)
-            self.create_circle(xo, yo, 4, "green")        
+            self.create_circle(xo, yo, 4, self.config.get(str(self.theme), "cent"))        
 
     def create_circle(self, x, y, r, color):
-        self.can.create_oval(x-r, y-r, x+r, y+r, fill=color, tags=str(x)+","+str(y))
+        self.can.create_oval(x-r, y-r, x+r, y+r, fill=color, outline=color, tags=str(x)+","+str(y))
 
     def create_trans_circle(self, x, y, r):
-        self.can.create_oval(x-r, y-r, x+r, y+r, outline="blue")
+        self.can.create_oval(x-r, y-r, x+r, y+r, outline=self.config.get(str(self.theme), "del"))
 
 
 
 class Voronoi:
     global keeped
-    def __init__(self, dots, offset, can):
+    def __init__(self, dots, offset, can, config, ntheme):
         self.dots = dots
         self.offset = offset
+        self.config = config
+        themes = ["default","solarized","gruvbox", "onedark", "vapor"]
+        self.theme = themes[ntheme]
         self.can = can
         self.can.delete("all")
+
         for i in range(len(dots)):
-            self.can.create_oval(dots[i][0]-2, dots[i][1]-2, dots[i][0]+2, dots[i][1]+2, fill="black", outline="black")
+            self.can.create_oval(dots[i][0]-2, dots[i][1]-2, dots[i][0]+2, dots[i][1]+2, fill=self.config.get(str(self.theme), "dots"), outline=self.config.get(str(self.theme), "dots"))
+        
         tag=0
 
-        Triangulation(self.dots, self.offset, self.can, 0)
+        Triangulation(self.dots, self.offset, self.can,self.config, ntheme, 0)
 
         for i in range(len(keeped)):
     
@@ -201,16 +205,15 @@ class Voronoi:
                         # Méthode de bourrin triangles adjacents
                         if   (A in TEST) and (B in TEST):
 
-                            self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="red", width=2)
+                            self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill=self.config.get(str(self.theme), "vor"), width=2)
                             tag +=1
 
                         elif (C in TEST) and (A in TEST):
 
-                            self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="red", width=2)
+                            self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill=self.config.get(str(self.theme), "vor"), width=2)
                             tag +=1
 
                         elif (C in TEST) and (B in TEST):
 
-                            self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="red", width=2)
+                            self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill=self.config.get(str(self.theme), "vor"), width=2)
                             tag +=1       
-        print("%s lines made" % tag)

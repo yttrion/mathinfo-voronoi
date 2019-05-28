@@ -24,15 +24,21 @@ dots, colors, nclic = [], [], 0
 
 class Main:
     
-    def __init__(self, size, dirr, pts=[]):
+    def __init__(self, size, dirr, pts=[], ntheme=0):
         global dots
         self.dirr = dirr
         self.curDir = os.path.dirname(os.path.abspath(__file__)) + self.dirr
         configfile = self.curDir + ".." + self.dirr + "config" + self.dirr + "vor.cfg"
         self.config = configparser.ConfigParser()
         self.config.read(configfile)
+        self.fensize = size
+        self.ntheme = ntheme
 
         self.version = self.config.get("config", "version")
+
+        test = ["default", "solarized", "gruvbox", "onedark", "vapor"]
+        self.theme = test[self.ntheme]
+
 
         if self.config.getboolean("config", "extras"):
             import pygame
@@ -51,7 +57,7 @@ class Main:
 
         self.root.geometry(str(self.height)+"x"+str(self.height)+"+105+75")
 
-        self.bg = "white"
+        self.bg = self.config.get(str(self.theme), "bg")
         self.title = self.root.title("【ＶＯＲＯＮＯＩ】")
 
         self.pt = pts
@@ -65,8 +71,10 @@ class Main:
 
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Fichier", menu=self.filemenu)
+        self.filemenu.add_command(label="Nouveau", command=self.cleaner)
         self.filemenu.add_command(label="Ouvrir", command=self.openfile)
         self.filemenu.add_command(label="Sauver", command=self.save)
+        self.filemenu.add_command(label="Couleurs", command=self.setuptheme)
         self.filemenu.add_command(label="Quitter", command=self.root.destroy)
 
         self.custommenu = tk.Menu(self.menubar, tearoff=0)
@@ -87,23 +95,30 @@ class Main:
             pass
         self.root.mainloop()
 
+    def cleaner(self):
+        self.disbalecustom(self.motion)
+        self.can.delete("all")
+        dots.clear()       
+
     def motion(self, event):
         x, y = event.x, event.y
 
     def enablecustom(self):
-        self.can.delete("all")
-        dots.clear()
         self.config.set("config", "custom-plot", "1")
         self.root.bind('<Button-1>', self.clicked)
 
     def disbalecustom(self, event):
         self.config.set("config", "custom-plot", "0")    
 
-    def create_circle(self, x, y, r, color, out="black"):
-        self.can.create_oval(x-r, y-r, x+r, y+r, fill=color, outline=out, tags=str(x)+","+str(y))
+    def create_circle(self, x, y, r, color):
+        self.can.create_oval(x-r, y-r, x+r, y+r, fill=color, outline=color, tags=str(x)+","+str(y))
 
-    def create_trans_circle(self, x, y, r):
-        self.can.create_oval(x-r, y-r, x+r, y+r, outline="blue")
+
+    def setuptheme(self):
+        n = simpledialog.askinteger("Séléction du thème", "Default(1), Solarized(2), Gruvbox(3), OneDark(4), Vaporwave(5)",  minvalue=1, maxvalue=5)
+        self.config.set("config", "theme", str(n-1))
+        self.root.destroy()
+        self.__init__(self.fensize, self.dirr, [], n-1)
 
     def openfile(self):
         global dots
@@ -121,7 +136,7 @@ class Main:
                     self.config.set("config", "size", str(content[0]))
                     f.close()   
                     self.root.destroy()
-                    self.__init__(content[0], self.dirr, coord)
+                    self.__init__(content[0], self.dirr, coord, self.ntheme)
                 except:
                     messagebox.showerror("Erreur", "Fichier corrompu")
             else:
@@ -136,10 +151,13 @@ class Main:
     def clicked(self, event):
         x, y = event.x, event.y
         if self.config.getboolean("config", "custom-plot"):
-            self.create_circle(x, y, 2, "black")
+            self.create_circle(x, y, 2, self.config.get(str(self.theme), "dots"))
             col = '#%02x%02x%02x' % self.colourize()
             dots.append([x, y])
             colors.append(col)
+        if len(dots)>1:
+            calc.Voronoi(dots, self.offset, self.can, self.config, self.ntheme)
+
 
     def randomize(self):
         self.config.set("config", "custom-plot", "0")
@@ -151,22 +169,22 @@ class Main:
 
         for k in range(n):
             x, y = random.randint(20, self.width-20), random.randint(20, self.height-20)
-            self.create_circle(x, y, 2, "black")
+            self.create_circle(x, y, 2, self.config.get(str(self.theme), "dots"))
             col = '#%02x%02x%02x' % self.colourize()
             dots.append([x, y])
             colors.append(col)    
         
     def runtri(self):
         Disablecustom(self.config)
-        calc.Triangulation(dots, self.offset, self.can)
+        calc.Triangulation(dots, self.offset, self.can, self.config, self.ntheme)
 
     def rundel(self):
         Disablecustom(self.config)
-        calc.Delaunay(dots, self.offset, self.can)
+        calc.Delaunay(dots, self.offset, self.can, self.config, self.ntheme)
 
     def runvor(self):
         Disablecustom(self.config)
-        calc.Voronoi(dots, self.offset, self.can)
+        calc.Voronoi(dots, self.offset, self.can, self.config, self.ntheme)
 
     def save(self):
         output = filedialog.asksaveasfile(mode="w", defaultextension=".txt")
@@ -185,7 +203,7 @@ class Main:
 
         global dots
         for i in range(len(self.pt)):
-            self.create_circle(self.pt[i][0], self.pt[i][1], 2, "black")
+            self.create_circle(self.pt[i][0], self.pt[i][1], 2, self.config.get(str(self.theme), "dots"))
         dots = []
         dots = self.pt
         print(dots)   
@@ -212,12 +230,12 @@ class Main:
             
             nclic=1
             return 
-        self.create_circle(dots[key][0], dots[key][1], 2, self.bg, self.bg)
+        self.create_circle(dots[key][0], dots[key][1], 2, self.bg)
         dots[key][0], dots[key][1] = x, y
-        self.create_circle(x, y, 2, "black")
+        self.create_circle(x, y, 2, self.config.get(str(self.theme), "dots"))
         nclic=0
         Disablecustom(self.config)
-        calc.Voronoi(dots, self.offset, self.can)
+        calc.Voronoi(dots, self.offset, self.can, self.config, self.ntheme)
 
     def aprops(self):
         messagebox.showinfo("A propos", "Version:\t%s\nAuteurs:\tPierre-Yves Douault\n\tVincent Leurent\n\tPierre-Antoine Soyer" % (self.version))
