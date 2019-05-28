@@ -1,8 +1,8 @@
 # Mini projet maths-info - **PARTITION DE VORONOI**
 
-![](https://img.shields.io/badge/Commits-54-blue.svg?longCache=true&style=popout-square)
+![](https://img.shields.io/badge/Commits-56-blue.svg?longCache=true&style=popout-square)
 ![](https://img.shields.io/badge/Tested_on-Linux/Windows-orange.svg?longCache=true&style=popout-square)
-![](https://img.shields.io/badge/Version-1.0-green.svg?longCache=true&style=popout-square)
+![](https://img.shields.io/badge/Version-1.2-green.svg?longCache=true&style=popout-square)
 ![](https://img.shields.io/badge/License-MIT-yellow.svg?longCache=true&style=popout-square)
 
 ## **Installation**
