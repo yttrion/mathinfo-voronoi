@@ -19,8 +19,8 @@ def clearScr():
 
 import lib.core.Calculus as calc
 
-global dots, colors, nclic
-dots, colors, nclic = [], [], 0
+global dots, nclic
+dots,  nclic = [], 0
 
 class Main:
     
@@ -142,19 +142,11 @@ class Main:
             else:
                 messagebox.showerror("Erreur", "Format de fichier non reconnu.")
 
-    def colourize(self):
-        a = random.randint(0, 255)
-        b = random.randint(0, 255)
-        c = random.randint(0, 255)
-        return (a, b, c)
-
     def clicked(self, event):
         x, y = event.x, event.y
         if self.config.getboolean("config", "custom-plot"):
             self.create_circle(x, y, 2, self.config.get(str(self.theme), "dots"))
-            col = '#%02x%02x%02x' % self.colourize()
             dots.append([x, y])
-            colors.append(col)
         if len(dots)>1:
             calc.Voronoi(dots, self.offset, self.can, self.config, self.ntheme)
 

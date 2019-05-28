@@ -41,5 +41,5 @@ class Splashscreen:
         self.can.create_image(1,1,image=self.bg, anchor="nw")
 
         #Delay avant destruction
-        self.root.after(2000, lambda: self.root.destroy())
+        self.root.after(5000, lambda: self.root.destroy())
         self.root.mainloop()
