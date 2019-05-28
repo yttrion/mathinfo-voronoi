@@ -1,0 +1,11 @@
+0.1 -   Fenêtre principale
+0.2 -   Ajout de la barre de menus
+0.3 -   Affichage de TOUS les triangles possibles (BUG)
+0.4 -   Affichage des cercles de Delaunay
+0.5 -   Ajout de la partition de Voronoi (BUG)
+0.6 -   Ajout de la méthode de calcul pixel par pixel (DEMANDE TROP DE RESSOURCES)
+0.7 -   Ajout de points à "l'infini", affichage de la partition de voronoï
+0.8 -   Correction des erreurs liées aux arrondis, simplification du code
+0.9 -   Fractionnement du code pour plus de facilité lors de l'édition, ajout du splash screen
+1.0 -   Version finale, ajout de l'ouverture de fichier, ajout du déplacement des points
+1.1 -   

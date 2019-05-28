@@ -12,7 +12,7 @@ import time
 import platform
 import configparser
 
-import pygame, time
+import time
 
 import math
 import random
@@ -32,18 +32,28 @@ def Dist(p1, p2):
 
 class Triangulation:
 
-    def __init__(self, dots, offset, can, tria=1, tran=[]):
+    def __init__(self, dots, offset, can, tria=1, clean=0):
 
         global keeped
-        self.con = can
 
+
+        self.can = can
         self.tria = tria
         self.dots = dots
+        
+        self.can.delete("all")
 
-        self.dots.append([-offset,offset])
-        self.dots.append([offset,-offset])
-        self.dots.append([-offset,-offset])
-        self.dots.append([offset,offset])
+
+
+        if  ([offset,offset] not in self.dots):
+            self.dots.append([-offset,offset])
+            self.dots.append([offset,-offset])
+            self.dots.append([-offset,-offset])
+            self.dots.append([offset,offset])
+
+        elif ([offset,offset] in self.dots) and clean==1:
+            print(self.dots.index([-offset,offset]))
+            self.dots = self.dots[:-4]
 
         self.listetri = list(combinations(self.dots, 3))
         keeptri.clear()
@@ -98,12 +108,16 @@ class Triangulation:
                 thall.append([xo, yo])
                 
                 if self.tria == 1:
-                    self.con.create_line(xa, ya, xb, yb, fill="green", width=2)
-                    self.con.create_line(xc, yc, xb, yb, fill="green", width=2)
-                    self.con.create_line(xa, ya, xc, yc, fill="green", width=2)
+                    self.can.create_line(xa, ya, xb, yb, fill="chartreuse2", width=2)
+                    self.can.create_line(xc, yc, xb, yb, fill="chartreuse2", width=2)
+                    self.can.create_line(xa, ya, xc, yc, fill="chartreuse2", width=2)
+                    
 
         print("%s triangles saved" % len(keeptri))
+        for i in range(len(self.dots)):
+            self.can.create_oval(self.dots[i][0]-2, self.dots[i][1]-2, self.dots[i][0]+2, self.dots[i][1]+2, fill="black", outline="black")
         return keeptri
+
 
     def motion(self, event):
         x, y = event.x, event.y
@@ -116,6 +130,9 @@ class Delaunay:
         self.dots = dots
         self.offset = offset
         self.can = can
+        self.can.delete("all")
+        for i in range(len(dots)):
+            self.can.create_oval(dots[i][0]-2, dots[i][1]-2, dots[i][0]+2, dots[i][1]+2, fill="black", outline="black")
 
         Triangulation(self.dots, self.offset, self.can, 0)
 
@@ -157,6 +174,9 @@ class Voronoi:
         self.dots = dots
         self.offset = offset
         self.can = can
+        self.can.delete("all")
+        for i in range(len(dots)):
+            self.can.create_oval(dots[i][0]-2, dots[i][1]-2, dots[i][0]+2, dots[i][1]+2, fill="black", outline="black")
         tag=0
 
         Triangulation(self.dots, self.offset, self.can, 0)
@@ -193,4 +213,4 @@ class Voronoi:
 
                             self.can.create_line(thall[i][0], thall[i][1], thall[j][0], thall[j][1], fill="red", width=2)
                             tag +=1       
-        print("%s lines made" % tag) 
+        print("%s lines made" % tag)

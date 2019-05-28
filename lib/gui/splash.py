@@ -18,10 +18,15 @@ def clearScr():
 
 class Splashscreen:
 
-    def __init__(self, dirr):
+    def __init__(self, dirr, config):
 
         curDir = os.path.dirname(os.path.abspath(__file__)) + dirr
         clearScr()
+        if config.getboolean("config", "extras"):
+            import pygame
+            pygame.init()
+            splash = pygame.mixer.Sound(curDir + "sounds" + dirr + "splash.wav")
+            splash.play()            
 
         self.root = tk.Tk()
 
@@ -36,5 +41,5 @@ class Splashscreen:
         self.can.create_image(1,1,image=self.bg, anchor="nw")
 
         #Delay avant destruction
-        self.root.after(5000, lambda: self.root.destroy())
+        self.root.after(2000, lambda: self.root.destroy())
         self.root.mainloop()

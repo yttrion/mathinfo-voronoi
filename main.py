@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+# 【A】【E】【S】【T】【H】【E】【T】【I】【C】【S】
+
 import tkinter as tk  # Pour éviter de tout importer
 
 from tkinter import simpledialog, filedialog, messagebox
@@ -12,7 +14,7 @@ import time
 import platform
 import configparser
 
-import pygame, time
+import time
 
 import math
 import random
@@ -32,9 +34,12 @@ config = configparser.ConfigParser()
 config.read(configfile)
 
 
+
+
+
 class Startup:
     s = config.getint("config", "size")
-    sp.Splashscreen(dirr)
+    sp.Splashscreen(dirr, config)
     vor.Main(s, dirr)
 
 

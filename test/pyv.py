@@ -23,7 +23,7 @@ dirr = "\\" if platform.system().lower() == "windows" else "/"
 
 
 curDir = os.path.dirname(os.path.abspath(__file__)) + dirr
-configfile = curDir + "src" + dirr + "vor.cfg"
+configfile = curDir + "vor.cfg"
 config = configparser.ConfigParser()
 config.read(configfile)
 
