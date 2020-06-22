@@ -8,4 +8,4 @@
 0.8 -   Correction des erreurs liées aux arrondis, simplification du code
 0.9 -   Fractionnement du code pour plus de facilité lors de l'édition, ajout du splash screen
 1.0 -   Version finale, ajout de l'ouverture de fichier, ajout du déplacement des points
-1.1 -   
+1.1 -  Edit code so that it doesn't use pygame when disabled in config 
